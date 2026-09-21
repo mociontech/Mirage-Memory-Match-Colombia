@@ -64,8 +64,9 @@
   width: 54vh;
   transform: translateX(-50%);
   margin: 0;
-  list-style: decimal;
-  padding-left: 1.3em;
+  list-style: none;
+  padding-left: 0;
+  counter-reset: instructions-step;
   display: flex;
   flex-direction: column;
   gap: 3.23vh;
@@ -74,6 +75,16 @@
   font-size: 2.97vh;
   line-height: 1.09;
   text-align: center;
+}
+
+/*
+ * El numero va inline (no ::marker/list-style, que Chrome ancla al borde
+ * izquierdo del <li> sin importar el centrado del texto) para que quede
+ * pegado a la primera palabra y viaje con el texto al centrarlo.
+ */
+.list li::before {
+  counter-increment: instructions-step;
+  content: counter(instructions-step) ". ";
 }
 
 .list strong {
