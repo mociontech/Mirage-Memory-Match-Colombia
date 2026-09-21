@@ -188,3 +188,34 @@ export async function fetchRanking(): Promise<RankingEntry[]> {
     return [];
   }
 }
+
+/**
+ * This participant's rank in ranking_by_experience (1 = highest score),
+ * read straight off the view's own `position` column instead of
+ * recomputing it client-side. Returns null if unconfigured/unreachable, or
+ * if the row hasn't synced into the ranking DB yet (the submission goes
+ * through the outbox and can lag a few seconds) - the caller shows nothing
+ * in that case rather than a wrong or stale position.
+ */
+export async function fetchMyPosition(email: string): Promise<number | null> {
+  if (!RANKING_DB_URL || !RANKING_DB_API_KEY) return null;
+  try {
+    const query = new URLSearchParams({
+      participant_id: `eq.${normalizeEmail(email)}`,
+      country: `eq.${COUNTRY}`,
+      experience: "eq.memory_match",
+      select: "position",
+    });
+    const res = await fetch(`${RANKING_DB_URL}/rest/v1/ranking_by_experience?${query}`, {
+      headers: {
+        apikey: RANKING_DB_API_KEY,
+        Authorization: `Bearer ${RANKING_DB_API_KEY}`,
+      },
+    });
+    if (!res.ok) return null;
+    const rows = (await res.json()) as Array<{ position: number }>;
+    return rows[0]?.position ?? null;
+  } catch {
+    return null;
+  }
+}

@@ -81,3 +81,21 @@
   color: var(--color-text);
   text-align: center;
 }
+
+/*
+ * Not in Figma - added on request, kept deliberately subtle (small, muted,
+ * plain weight) so it reads as a quiet aside under "ACUMULASTE" rather than
+ * competing with the actual design.
+ */
+.position {
+  position: absolute;
+  left: 50%;
+  top: 65.5vh;
+  width: 47.24vh;
+  transform: translateX(-50%);
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 2.2vh;
+  color: var(--color-text-muted);
+  text-align: center;
+}

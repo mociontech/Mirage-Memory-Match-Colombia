@@ -1,4 +1,4 @@
-import { fetchRanking, type RankingEntry } from "./api";
+import { fetchMyPosition, fetchRanking, type RankingEntry } from "./api";
 
 export type { RankingEntry };
 
@@ -9,4 +9,9 @@ export type { RankingEntry };
  */
 export async function getTop10(): Promise<RankingEntry[]> {
   return fetchRanking();
+}
+
+/** This participant's rank (1 = highest score), or null if not available yet — same never-block contract as getTop10. */
+export async function getMyPosition(email: string): Promise<number | null> {
+  return fetchMyPosition(email);
 }

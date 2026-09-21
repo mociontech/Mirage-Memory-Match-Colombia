@@ -1,14 +1,17 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFlow } from "../../app/FlowMachine";
 import { BrandFrame } from "../../components/BrandFrame";
 import { Footer } from "../../components/Footer";
 import { Logo } from "../../components/Logo";
 import { rememberUsedEmail, rememberUsedId } from "../../services/idService";
 import { enqueueParticipation } from "../../services/outbox";
+import { getMyPosition } from "../../services/ranking";
 import type { Participation } from "../../types/participation";
 import styles from "./Result.module.css";
 
 const AUTO_ADVANCE_MS = 7_000;
+/** Position poll attempts, spaced out to give the outbox (1s/2s/4s/8s backoff) time to actually land the row before AUTO_ADVANCE_MS fires. */
+const POSITION_POLL_DELAYS_MS = [1_500, 3_500, 6_000];
 
 /**
  * Thank-you + accumulated points. Writes the outbox entry once, on arrival.
@@ -18,10 +21,17 @@ const AUTO_ADVANCE_MS = 7_000;
  * left/top/width/height/font-size is `(figma_px / 1920) * 100`vh, same
  * conversion as every other screen (see the comment in Welcome.tsx for why
  * that's exact on this aspect-locked shell).
+ *
+ * The ranking position line under "Acumulaste" is not in Figma - added on
+ * request, deliberately subtle (small, muted) so it doesn't compete with
+ * the actual design. It only ever appears once the submission has actually
+ * synced; a kiosk offline or a slow sync just shows nothing, never a wrong
+ * or stale number.
  */
 export function Result() {
   const { navigate, session } = useFlow();
   const submitted = useRef(false);
+  const [position, setPosition] = useState<number | null>(null);
 
   useEffect(() => {
     if (submitted.current) return;
@@ -45,6 +55,23 @@ export function Result() {
   }, [session]);
 
   useEffect(() => {
+    if (!session.email) return;
+    let cancelled = false;
+    const timers = POSITION_POLL_DELAYS_MS.map((delay) =>
+      setTimeout(() => {
+        if (cancelled) return;
+        getMyPosition(session.email!).then((result) => {
+          if (!cancelled && result !== null) setPosition(result);
+        });
+      }, delay),
+    );
+    return () => {
+      cancelled = true;
+      timers.forEach(clearTimeout);
+    };
+  }, [session.email]);
+
+  useEffect(() => {
     const timer = setTimeout(() => navigate("ranking"), AUTO_ADVANCE_MS);
     return () => clearTimeout(timer);
   }, [navigate]);
@@ -58,6 +85,7 @@ export function Result() {
       <h1 className={styles.title}>¡Gracias por participar!</h1>
       <div className={styles.scoreBox}>{Math.round(session.score)}</div>
       <p className={styles.label}>Acumulaste</p>
+      {position !== null && <p className={styles.position}>Vas en el puesto #{position}</p>}
       <Footer />
     </div>
   );
