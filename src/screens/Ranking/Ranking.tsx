@@ -15,10 +15,9 @@ const TOP_N = 5;
  * first tap, whichever comes first, so a kiosk session never dead-ends here
  * waiting on the much longer idle-reset timeout (60s, wired in App.tsx).
  * The list never blocks: getTop10() resolves to [] instead of hanging if the
- * backend is unreachable. Figma's card shows first names only, no points —
- * the backend still orders by score, this screen just doesn't print it.
+ * backend is unreachable.
  *
- * Positioned to match Figma (node 211:1889, 1080x1920) exactly — every
+ * Positioned to match Figma (node 423:290, 1080x1920) exactly — every
  * left/top/width/height/font-size is `(figma_px / 1920) * 100`vh, same
  * conversion as every other screen (see the comment in Welcome.tsx for why
  * that's exact on this aspect-locked shell).
@@ -56,7 +55,8 @@ export function Ranking() {
           <ol className={styles.list}>
             {entries.map((entry, index) => (
               <li key={`${entry.name}-${index}`} className={styles.row}>
-                {entry.name}
+                <span>{entry.name}</span>{" "}
+                <span className={styles.score}>{Math.round(entry.points)}pt</span>
               </li>
             ))}
           </ol>
