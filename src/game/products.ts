@@ -1,20 +1,20 @@
-import boilerTurboFlux from "../assets/images/products/boiler-turbo-flux.webp";
-import ciMagnumComercialLigero from "../assets/images/products/ci-magnum-comercial-ligero.webp";
-import disx30 from "../assets/images/products/disx30.webp";
-import m22MinisplitColombia from "../assets/images/products/m22-minisplit-colombia.webp";
-import neoMinisplit from "../assets/images/products/neo-minisplit.webp";
-import nexMinisplit from "../assets/images/products/nex-minisplit.webp";
-import v32Minisplit from "../assets/images/products/v32-minisplit.webp";
-import xtraMultinverter from "../assets/images/products/xtra-multinverter.webp";
+import boilerTurboFlux from "../assets/images/products/boiler-turbo-flux.png";
+import ciMagnumComercialLigero from "../assets/images/products/ci-magnum-comercial-ligero.png";
+import disx30 from "../assets/images/products/disx30.png";
+import m22MinisplitColombia from "../assets/images/products/m22-minisplit-colombia.png";
+import neoMinisplit from "../assets/images/products/neo-minisplit.png";
+import nexMinisplit from "../assets/images/products/nex-minisplit.png";
+import v32Minisplit from "../assets/images/products/v32-minisplit.png";
+import xtraMultinverter from "../assets/images/products/xtra-multinverter.png";
 
-import nexLogo from "../assets/images/products/logos/nex-logo.png";
-import neoLogo from "../assets/images/products/logos/neo-logo.png";
-import v32Logo from "../assets/images/products/logos/v32-logo.png";
-import disx30Logo from "../assets/images/products/logos/disx30-logo.png";
-import ciMagnumLogo from "../assets/images/products/logos/ci-magnum-logo.png";
-import xtraLogo from "../assets/images/products/logos/xtra-logo.png";
-import m22MagnumLogo from "../assets/images/products/logos/m22-magnum-logo.png";
-import boilerTurboFluxLogo from "../assets/images/products/logos/boiler-turbo-flux-logo.png";
+import nexLogo from "../assets/images/products/logos/nex-logo.svg";
+import neoLogo from "../assets/images/products/logos/neo-logo.svg";
+import v32Logo from "../assets/images/products/logos/v32-logo.svg";
+import disx30Logo from "../assets/images/products/logos/disx30-logo.svg";
+import ciMagnumLogo from "../assets/images/products/logos/ci-magnum-logo.svg";
+import xtraLogo from "../assets/images/products/logos/xtra-logo.svg";
+import m22MagnumLogo from "../assets/images/products/logos/m22-magnum-logo.svg";
+import boilerTurboFluxLogo from "../assets/images/products/logos/boiler-turbo-flux-logo.svg";
 
 /** left/top/width/height as % of the card box — see CardRect below. */
 export interface CardRect {
