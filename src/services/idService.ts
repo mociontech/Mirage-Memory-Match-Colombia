@@ -43,10 +43,20 @@ export function hasEmailPlayedLocally(email: string): boolean {
   return readUsedEmailsCache().includes(normalizeEmail(email));
 }
 
-/** Generates a fresh "123-456"-style participation ID. */
+/**
+ * Genera un codigo de 6 digitos, SIN guion (antes era "123-456") - mismo
+ * formato que generateParticipantCode() en la version tablet+pitch de
+ * Products. El guion era solo decorativo aca, pero un codigo generado en
+ * Products nunca lo tenia; al buscarlo desde "Digita ID" (que reconstruye
+ * la busqueda con guion) nunca calzaba - un codigo real generado en la
+ * tablet daba "no encontrado" al intentar usarlo aca (bug real detectado en
+ * vivo en Mexico, mismo fix ya aplicado ahi - ver Mirage-Memory-Match-Mexico).
+ * El guion visual en pantalla lo sigue poniendo IdInput/IdGenerated (por
+ * posicion, no porque el string lo tenga) - ver el ajuste ahi.
+ */
 export function generateId(): string {
   const block = () => String(Math.floor(Math.random() * 10 ** BLOCK_LENGTH)).padStart(BLOCK_LENGTH, "0");
-  return `${block()}-${block()}`;
+  return `${block()}${block()}`;
 }
 
 function readUsedIdsCache(): string[] {
@@ -92,37 +102,47 @@ export interface RegistrationFields {
   email: string | null;
 }
 
+const REGISTER_RETRY_DELAYS_MS = [0, 800, 2000];
+
 /**
  * Guarda el registro (nombre/correo) asociado a un codigo apenas se genera,
  * para que la pantalla "Digita ID" lo pueda recuperar despues desde
  * cualquier dispositivo - antes el codigo no quedaba en ningun lado
  * consultable, asi que esa pantalla nunca podia saber de quien era.
- * Best-effort y silencioso: nunca bloquea el registro ni lanza. Si falla
- * (sin red), el peor caso es que ese codigo puntual no se pueda recuperar
- * mas tarde - el registro local (sessionStorage) sigue funcionando igual.
+ *
+ * Antes tampoco revisaba `res.ok`: un 4xx/5xx de Supabase (RLS, caida, etc.)
+ * se veia identico a un exito y el codigo se mostraba como guardado sin
+ * estarlo (bug real detectado en vivo en el evento de Mexico). Ahora
+ * reintenta con backoff corto y devuelve si de verdad quedo guardado.
  */
-export async function submitRegistration(code: string, fields: RegistrationFields): Promise<void> {
-  if (!env.rankingDb.url || !env.rankingDb.apiKey) return;
-  try {
-    await fetch(`${env.rankingDb.url}/rest/v1/registrations`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        apikey: env.rankingDb.apiKey,
-        Authorization: `Bearer ${env.rankingDb.apiKey}`,
-        Prefer: "return=minimal",
-      },
-      body: JSON.stringify({
-        code,
-        country: env.country,
-        experience: RANKING_EXPERIENCE,
-        name: fields.name,
-        email: fields.email,
-      }),
-    });
-  } catch {
-    // Sin red: el codigo no queda recuperable remotamente por ahora.
+export async function submitRegistration(code: string, fields: RegistrationFields): Promise<boolean> {
+  if (!env.rankingDb.url || !env.rankingDb.apiKey) return false;
+
+  for (const delay of REGISTER_RETRY_DELAYS_MS) {
+    if (delay) await new Promise((resolve) => setTimeout(resolve, delay));
+    try {
+      const res = await fetch(`${env.rankingDb.url}/rest/v1/registrations`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: env.rankingDb.apiKey,
+          Authorization: `Bearer ${env.rankingDb.apiKey}`,
+          Prefer: "return=minimal",
+        },
+        body: JSON.stringify({
+          code,
+          country: env.country,
+          experience: RANKING_EXPERIENCE,
+          name: fields.name,
+          email: fields.email,
+        }),
+      });
+      if (res.ok) return true;
+    } catch {
+      // Sin red en este intento - se reintenta abajo.
+    }
   }
+  return false;
 }
 
 export type RegistrationLookup =
